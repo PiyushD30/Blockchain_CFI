@@ -1,49 +1,37 @@
 pragma solidity 0.8.20;
+contract voting {
+    struct Candidate {
+        uint candidate_no;
+        string name;
+        uint votes;
+    }
 
-contract crowdFunding {
-    address payable public admin;
-    uint public goalAmount = 100 ether;
-    uint public totalAmount = 0;
-    mapping(address => uint) public pay;
-    address[] person;
-    uint public people_no = 0;
-    uint start_time;
-    uint public time;
+    Candidate[] public candidate;
+    uint public candidate_count=0;
+    mapping(address => bool) public voter;
 
-    constructor(uint _goalAmount, uint _start_time) {
-        admin = payable(msg.sender);
-        goalAmount = _goalAmount;
-        start_time = _start_time;
-        time = block.timestamp -_start_time;
+    function addCandidate(string memory name) private {
+        candidate_count++;
+        candidate.push(Candidate(candidate_count, name,0));
     }
-    
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only the admin can access!");
-        _;
+
+    function vote(uint _candidate_no) public {
+        require(!voter[msg.sender], "You have already voted");
+        candidate[_candidate_no].votes++;
+        voter[msg.sender] = true;
     }
-    
-    function contribute() public payable {
-        time = block.timestamp-start_time;
-        require(totalAmount < goalAmount, "Goal Reached!");
-        require(time < 2 days , "Campaign Closed!");
-        person.push(msg.sender);
-        pay[person[people_no]] = msg.value;
-        totalAmount += msg.value;
-        people_no++;
-    }
-    
-    function refund() public {
-        require(totalAmount < goalAmount);
-        require(time > 2 days);
-        for(uint i=0; i<people_no;i++){
-            payable(person[i]).transfer(pay[person[i]]);
+
+    function Winner() public view returns (uint, string memory, uint votes) {
+        uint winnerVote = 0;
+        uint winner_id = 0;
+
+        for (uint i = 1; i <= candidate_count; i++) {
+            if (candidate[i].votes > winnerVote) {
+                winnerVote = candidate[i].votes;
+                winner_id = candidate[i].candidate_no;
+            }
         }
-    }
-    
-    function closeCampaign() public onlyAdmin {
-        if (goalAmount == totalAmount) {
-            admin.transfer(totalAmount);
-            totalAmount = 0;
-        }
+        Candidate memory winner = candidate[winner_id];
+        return (winner.candidate_no, winner.name, winner.votes);
     }
 }
