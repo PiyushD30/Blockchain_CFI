@@ -5,17 +5,20 @@ contract aadhar{
         string name;
         string dob;
         string Address;
+        uint aadhar_no;
         address walletAddress;
     }
 
-    mapping(address => Person) private person;
+    mapping(uint => Person) private person;
     
-    function storeDetails(string memory name,string memory dob,string memory aadharAddress) public {
-        person[msg.sender] = Person(name, dob, aadharAddress, msg.sender);
+    function storeDetails(string memory name,string memory dob,string memory aadharAddress,uint aadhar_no) public {
+        person[aadhar_no] = Person(name, dob, aadharAddress,aadhar_no, msg.sender);
     }
 
-    function getAadhar() public view  returns (string memory, string memory, string memory, address) {
-        Person memory _person = person[msg.sender];
-        return (_person.name, _person.dob, _person.Address, _person.walletAddress);
+    function getAadhar(uint _aadhar_no) public view  returns (string memory, string memory, string memory,uint, address) {
+        Person memory _person = person[_aadhar_no];
+        return (_person.name, _person.dob, _person.Address,_person.aadhar_no, _person.walletAddress);
     }
 }
+//SPDX-License-Identifier: UNLICENSED
+
